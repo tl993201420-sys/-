@@ -30,4 +30,8 @@ export const api = {
   kline: (code, days = 60) => request(`/market/${code}/kline?days=${days}`),
   getReview: (tradeId) => request(`/reviews/${tradeId}`),
   createReview: (data) => request('/reviews', { method: 'POST', body: JSON.stringify(data) }),
+  statsSummary: () => request('/stats/summary'),
+  statsByReason: () => request('/stats/by-reason'),
+  statsDiscipline: () => request('/stats/discipline'),
+  statsViolations: () => request('/stats/violations'),
 }

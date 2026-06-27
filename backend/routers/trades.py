@@ -23,7 +23,10 @@ def _row_to_out(row, with_pnl: bool, conn=None) -> TradeOut:
 
     if data["status"] == "open":
         if with_pnl:
-            pnl = compute_pnl(data["stock_code"], data["entry_price"], data["entry_qty"])
+            pnl = compute_pnl(
+                data["stock_code"], data["entry_price"], data["entry_qty"],
+                data["entry_date"],
+            )
     elif data["status"] == "closed" and data.get("exit_price"):
         # 已平仓：最终盈亏 = (卖出价 - 买入价) × 数量
         diff = data["exit_price"] - data["entry_price"]
@@ -93,7 +96,9 @@ def pnl_summary():
     counted = 0
 
     for r in rows:
-        pnl = compute_pnl(r["stock_code"], r["entry_price"], r["entry_qty"])
+        pnl = compute_pnl(
+            r["stock_code"], r["entry_price"], r["entry_qty"], r["entry_date"]
+        )
         if pnl is None:
             continue
         counted += 1
