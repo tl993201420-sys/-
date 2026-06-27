@@ -70,7 +70,6 @@ def _fetch_akshare(stock_code: str) -> Optional[list[dict]]:
     """调用 AkShare 拉取最近约 15 个交易日的日K（前复权）。失败返回 None。"""
     try:
         import akshare as ak
-        import pandas as pd
 
         start = (dt.date.today() - dt.timedelta(days=30)).strftime("%Y%m%d")
         end = dt.date.today().strftime("%Y%m%d")
