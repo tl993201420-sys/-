@@ -18,6 +18,32 @@ class TradeCreate(BaseModel):
     entry_note: Optional[str] = Field(default=None, description="买入备注")
 
 
+class TradeClose(BaseModel):
+    """平仓：填写卖出信息。"""
+    exit_price: float = Field(..., gt=0, description="卖出价格")
+    exit_date: str = Field(..., description="卖出日期 YYYY-MM-DD")
+    exit_reason: Optional[str] = Field(default=None, description="卖出原因标签")
+
+
+class ReviewCreate(BaseModel):
+    """纪律自评 + 复盘四题（平仓后提交）。"""
+    trade_id: int
+    followed_stop_loss: int = Field(..., ge=0, le=1, description="1=是 0=否")
+    actual_exit_reason: str = Field(
+        ..., description="stop_loss/take_profit/emotional/changed_view"
+    )
+    discipline_score: int = Field(..., ge=1, le=5, description="纪律评分 1-5")
+    review_q1: Optional[str] = Field(default=None, description="入场判断准确在哪？")
+    review_q2: Optional[str] = Field(default=None, description="最大误判点？")
+    review_q3: Optional[str] = Field(default=None, description="可复用的规律？")
+    review_q4: Optional[str] = Field(default=None, description="下次相似情况怎么做？")
+
+
+class ReviewOut(ReviewCreate):
+    id: int
+    created_at: Optional[str] = None
+
+
 class PnL(BaseModel):
     """单笔持仓的盈亏数据（持仓中才计算）。"""
     last_close: Optional[float] = None
@@ -50,6 +76,11 @@ class TradeOut(BaseModel):
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
     pnl: Optional[PnL] = None
+    # 已平仓字段
+    realized_pnl: Optional[float] = None   # 最终盈亏（元）
+    realized_pct: Optional[float] = None   # 最终盈亏（%）
+    discipline_score: Optional[int] = None # 纪律分（来自复盘）
+    has_review: bool = False               # 是否已填复盘
 
 
 class PnLSummary(BaseModel):

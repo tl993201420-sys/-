@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client.js'
 import { fmtMoney, fmtPct, fmtPrice, pnlColor } from '../lib/format.js'
 
@@ -86,6 +86,7 @@ export default function TradeList() {
 }
 
 function OpenTable({ trades, summary }) {
+  const navigate = useNavigate()
   return (
     <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
       <table className="w-full text-sm">
@@ -99,13 +100,15 @@ function OpenTable({ trades, summary }) {
             <Th right>持仓盈亏(元)</Th>
             <Th right>持仓盈亏(%)</Th>
             <Th right>止损价</Th>
+            <Th right>操作</Th>
           </tr>
         </thead>
         <tbody>
           {trades.map((t) => {
             const p = t.pnl || {}
             return (
-              <tr key={t.id} className="border-t border-slate-100 hover:bg-slate-50">
+              <tr key={t.id} onClick={() => navigate(`/trades/${t.id}`)}
+                className="border-t border-slate-100 hover:bg-slate-50 cursor-pointer">
                 <Td>
                   <div className="font-medium text-slate-800">{t.stock_name}</div>
                   <div className="text-xs text-slate-400">{t.stock_code}</div>
@@ -117,6 +120,7 @@ function OpenTable({ trades, summary }) {
                 <Td right className={pnlColor(p.total_pnl)}>{fmtMoney(p.total_pnl)}</Td>
                 <Td right className={pnlColor(p.total_pct)}>{fmtPct(p.total_pct)}</Td>
                 <Td right className="text-orange-500">{fmtPrice(t.stop_loss)}</Td>
+                <Td right><span className="text-brand-600">详情 →</span></Td>
               </tr>
             )
           })}
@@ -131,7 +135,7 @@ function OpenTable({ trades, summary }) {
               <Td right className={pnlColor(summary.total_holding_pnl)}>
                 {fmtMoney(summary.total_holding_pnl)}
               </Td>
-              <Td colSpan={2}></Td>
+              <Td colSpan={3}></Td>
             </tr>
           </tfoot>
         )}
@@ -141,6 +145,7 @@ function OpenTable({ trades, summary }) {
 }
 
 function ClosedTable({ trades }) {
+  const navigate = useNavigate()
   return (
     <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
       <table className="w-full text-sm">
@@ -149,21 +154,34 @@ function ClosedTable({ trades }) {
             <Th>股票</Th>
             <Th>买入日期</Th>
             <Th>卖出日期</Th>
+            <Th right>最终盈亏(元)</Th>
+            <Th right>最终盈亏(%)</Th>
+            <Th right>纪律分</Th>
             <Th>状态</Th>
-            <Th right>买入价</Th>
+            <Th right>操作</Th>
           </tr>
         </thead>
         <tbody>
           {trades.map((t) => (
-            <tr key={t.id} className="border-t border-slate-100 hover:bg-slate-50">
+            <tr key={t.id} onClick={() => navigate(`/trades/${t.id}`)}
+              className="border-t border-slate-100 hover:bg-slate-50 cursor-pointer">
               <Td>
                 <div className="font-medium text-slate-800">{t.stock_name}</div>
                 <div className="text-xs text-slate-400">{t.stock_code}</div>
               </Td>
               <Td>{t.entry_date}</Td>
               <Td>{t.exit_date || '—'}</Td>
+              {t.status === 'closed' ? (
+                <>
+                  <Td right className={pnlColor(t.realized_pnl)}>{fmtMoney(t.realized_pnl)}</Td>
+                  <Td right className={pnlColor(t.realized_pct)}>{fmtPct(t.realized_pct)}</Td>
+                  <Td right>{t.discipline_score ? `${t.discipline_score}/5` : '未评'}</Td>
+                </>
+              ) : (
+                <><Td right>—</Td><Td right>—</Td><Td right>—</Td></>
+              )}
               <Td>{t.status === 'open' ? '持仓中' : '已平仓'}</Td>
-              <Td right>{fmtPrice(t.entry_price)}</Td>
+              <Td right><span className="text-brand-600">详情 →</span></Td>
             </tr>
           ))}
         </tbody>

@@ -2,6 +2,7 @@ import { NavLink, Route, Routes } from 'react-router-dom'
 import Dashboard from './pages/Dashboard.jsx'
 import TradeList from './pages/TradeList.jsx'
 import TradeForm from './pages/TradeForm.jsx'
+import TradeDetail from './pages/TradeDetail.jsx'
 
 function NavItem({ to, children, end }) {
   return (
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/trades" element={<TradeList />} />
           <Route path="/trades/new" element={<TradeForm />} />
+          <Route path="/trades/:id" element={<TradeDetail />} />
         </Routes>
       </main>
 

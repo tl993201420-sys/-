@@ -23,6 +23,11 @@ async function request(path, options = {}) {
 
 export const api = {
   listTrades: (status = 'open') => request(`/trades?status=${status}`),
+  getTrade: (id) => request(`/trades/${id}`),
   createTrade: (data) => request('/trades', { method: 'POST', body: JSON.stringify(data) }),
+  closeTrade: (id, data) => request(`/trades/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   pnlSummary: () => request('/trades/pnl-summary'),
+  kline: (code, days = 60) => request(`/market/${code}/kline?days=${days}`),
+  getReview: (tradeId) => request(`/reviews/${tradeId}`),
+  createReview: (data) => request('/reviews', { method: 'POST', body: JSON.stringify(data) }),
 }

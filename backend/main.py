@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import init_db
-from routers import trades
+from routers import market, reviews, trades
 
 app = FastAPI(title="A股交易复盘与纪律管理系统", version="0.1.0")
 
@@ -17,6 +17,8 @@ app.add_middleware(
 )
 
 app.include_router(trades.router)
+app.include_router(market.router)
+app.include_router(reviews.router)
 
 
 @app.on_event("startup")

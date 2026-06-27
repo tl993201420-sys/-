@@ -90,6 +90,45 @@ def _fetch_akshare(stock_code: str) -> Optional[list[dict]]:
         return None
 
 
+def get_kline(stock_code: str, days: int = 60) -> Optional[list[dict]]:
+    """获取历史日K线（前复权），返回 [{date, open, high, low, close, volume}]。
+
+    优先取 AkShare 数据并回写缓存；失败时降级到 market_cache 中的历史缓存。
+    """
+    try:
+        import akshare as ak
+
+        start = (dt.date.today() - dt.timedelta(days=days * 2 + 10)).strftime("%Y%m%d")
+        end = dt.date.today().strftime("%Y%m%d")
+        df = ak.stock_zh_a_hist(
+            symbol=stock_code, period="daily",
+            start_date=start, end_date=end, adjust="qfq",
+        )
+        if df is not None and not df.empty:
+            df = df[["日期", "开盘", "最高", "最低", "收盘", "成交量"]].rename(
+                columns={"日期": "date", "开盘": "open", "最高": "high",
+                         "最低": "low", "收盘": "close", "成交量": "volume"}
+            )
+            df["date"] = df["date"].astype(str)
+            records = df.to_dict(orient="records")
+            _write_cache(stock_code, records)
+            return records[-days:] if days else records
+    except Exception as exc:  # noqa: BLE001
+        print(f"[market] AkShare K线取数失败 {stock_code}: {exc}")
+
+    # 降级：从缓存读取
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT trade_date AS date, open, high, low, close, volume "
+            "FROM market_cache WHERE stock_code=? ORDER BY trade_date ASC",
+            (stock_code,),
+        ).fetchall()
+    records = [dict(r) for r in rows]
+    if records:
+        return records[-days:] if days else records
+    return None
+
+
 def get_quote(stock_code: str) -> Optional[Quote]:
     """获取最新收盘价与昨收。优先用当日缓存，否则拉 AkShare 并回写缓存。"""
     cached = _read_cache(stock_code)
